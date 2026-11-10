@@ -1,0 +1,255 @@
+// Prisma Schema for Production PERN Developer Portfolio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("ADMIN")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+model Profile {
+  id               String    @id @default(uuid())
+  fullName         String    @default("[Your Name]")
+  title            String    @default("[Full-Stack Developer & Database Architect]")
+  headline         String    @default("Building resilient systems, elegant interfaces, and database architectures.")
+  bio              String    @default("Passionate developer focused on full-stack web applications, relational data modeling, and intuitive user experiences.")
+  location         String    @default("Available Globally")
+  email            String    @default("hello@example.com")
+  phone            String?
+  githubUrl        String?   @default("https://github.com")
+  linkedinUrl      String?   @default("https://linkedin.com")
+  avatarUrl        String?
+  availableForHire Boolean   @default(true)
+  statusMessage    String    @default("Available for exciting opportunities")
+  updatedAt        DateTime  @updatedAt
+
+  @@map("profiles")
+}
+
+model SkillCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  order     Int      @default(0)
+  skills    Skill[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("skill_categories")
+}
+
+model Skill {
+  id          String        @id @default(uuid())
+  name        String
+  categoryId  String
+  category    SkillCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  icon        String?
+  proficiency Int?
+  isFeatured  Boolean       @default(false)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@map("skills")
+}
+
+model Project {
+  id               String         @id @default(uuid())
+  title            String
+  slug             String         @unique
+  summary          String
+  problemStatement String?
+  solution         String?
+  challenges       String?
+  technologies     String         // Comma-separated or JSON string
+  featuredImage    String?
+  liveUrl          String?
+  githubUrl        String?
+  playStoreUrl     String?
+  isFeatured       Boolean        @default(false)
+  order            Int            @default(0)
+  viewsCount       Int            @default(0)
+  images           ProjectImage[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@map("projects")
+}
+
+model ProjectImage {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("project_images")
+}
+
+model Experience {
+  id              String   @id @default(uuid())
+  organization    String
+  designation     String
+  duration        String
+  period          String?
+  description     String
+  responsibilities String? // JSON or bulleted text
+  technologies    String?
+  achievements    String?
+  type            String   @default("INTERNSHIP") // INTERNSHIP, FULL_TIME, CONTRACT
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("experiences")
+}
+
+model Education {
+  id              String   @id @default(uuid())
+  institution     String
+  degree          String
+  department      String
+  duration        String
+  graduationYear  String
+  achievements    String?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("educations")
+}
+
+model Certification {
+  id              String   @id @default(uuid())
+  name            String
+  issuingOrg      String
+  issueDate       String
+  credentialId    String?
+  verificationUrl String?
+  certificateImage String?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("certifications")
+}
+
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  event       String
+  year        String
+  description String?
+  category    String   @default("COMPETITION") // HACKATHON, ACADEMIC, COMPETITION
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("achievements")
+}
+
+model BlogCategory {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  slug      String     @unique
+  posts     BlogPost[]
+  createdAt DateTime   @default(now())
+
+  @@map("blog_categories")
+}
+
+model BlogPost {
+  id              String       @id @default(uuid())
+  title           String
+  slug            String       @unique
+  excerpt         String
+  content         String
+  coverImage      String?
+  readTimeMinutes Int          @default(3)
+  isPublished     Boolean      @default(true)
+  publishedAt     DateTime?    @default(now())
+  categoryId      String
+  category        BlogCategory @relation(fields: [categoryId], references: [id])
+  tags            String?      // Comma-separated tags
+  viewsCount      Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@map("blog_posts")
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  authorName  String
+  authorTitle String
+  company     String?
+  quote       String
+  avatarUrl   String?
+  rating      Int      @default(5)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@map("testimonials")
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("UNREAD") // UNREAD, READ, REPLIED, ARCHIVED
+  ipAddress String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
+model Resume {
+  id            String   @id @default(uuid())
+  fileName      String
+  originalName  String
+  filePath      String
+  fileSize      Int
+  mimeType      String   @default("application/pdf")
+  isActive      Boolean  @default(true)
+  downloadCount Int      @default(0)
+  uploadedAt    DateTime @default(now())
+
+  @@map("resumes")
+}
+
+model PortfolioAnalytics {
+  id        String   @id @default(uuid())
+  eventType String   // PAGE_VIEW, PROJECT_VIEW, BLOG_VIEW, RESUME_DOWNLOAD, CONTACT_SUBMIT
+  pagePath  String?
+  userAgent String?
+  ipHash    String?
+  metadata  String?  // JSON string
+  createdAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("portfolio_analytics")
+}
+
